@@ -29,6 +29,7 @@ scipy = "^1.9.0"
 scikit-learn = "^1.1.2"
 tqdm = "^4.64.0"
 coloredlogs = "^15.0.1"
+mt3scm = {path = "../../GithubRepos/temp/mt3scm", develop = false}
 
 
 [tool.poetry.dev-dependencies]
