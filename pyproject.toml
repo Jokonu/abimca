@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "abimca"
+version = "0.1.0"
+description = "Autoencoder based iterative modeling and multivariate time-series subsequence clustering algorithm (ABIMCA)"
+authors = ["Jonas Köhne <j.koehne@tu-berlin.de>"]
+license = "GNU GPLv3"
+readme = "README.md"
+keywords = ["timeseries", "multivariate", "autoencoder", "subsequence", "identification"]
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Framework :: Flake8",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+]
+
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+torch = "^1.12.1"
+pandas = "^1.4.3"
+numpy = "^1.23.2"
+matplotlib = "^3.5.3"
+scipy = "^1.9.0"
+scikit-learn = "^1.1.2"
+tqdm = "^4.64.0"
+coloredlogs = "^15.0.1"
+
+
+[tool.poetry.dev-dependencies]
+isort = "^5.10.1"
+black = "^22.6.0"
+flake8 = "^5.0.4"
+pylint = "^2.14.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+py_version=39
+import_heading_stdlib="Standard Libraries"
+import_heading_firstparty="Own Libraries"
+import_heading_thirdparty="Third Party Libraries"
+import_heading_localfolder="Local Scripts"
+
