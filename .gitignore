@@ -1,4 +1,5 @@
 .vscode
 .venv
+.trash
 __pycache__
 .abimca_tmp*
