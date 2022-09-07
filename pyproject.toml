@@ -3,8 +3,9 @@ name = "abimca"
 version = "0.1.0"
 description = "Autoencoder based iterative modeling and multivariate time-series subsequence clustering algorithm (ABIMCA)"
 authors = ["Jonas Köhne <j.koehne@tu-berlin.de>"]
-license = "GNU GPLv3"
+license = "BSD-3-Clause"
 readme = "README.md"
+repository = "https://github.com/Jokonu/abimca"
 keywords = ["timeseries", "multivariate", "autoencoder", "subsequence", "identification"]
 classifiers = [
     "Environment :: Console",
@@ -29,7 +30,6 @@ scipy = "^1.9.0"
 scikit-learn = "^1.1.2"
 tqdm = "^4.64.0"
 coloredlogs = "^15.0.1"
-mt3scm = {path = "../../GithubRepos/temp/mt3scm", develop = false}
 
 
 [tool.poetry.dev-dependencies]
@@ -37,6 +37,8 @@ isort = "^5.10.1"
 black = "^22.6.0"
 flake8 = "^5.0.4"
 pylint = "^2.14.5"
+bumpver = "^2022.1118"
+mt3scm = "^0.4.7"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -50,3 +52,22 @@ import_heading_firstparty="Own Libraries"
 import_heading_thirdparty="Third Party Libraries"
 import_heading_localfolder="Local Scripts"
 
+[tool.bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"',
+]
+"CITATION.cff" = [
+    "^version: {version}",
+]
+"mt3scm/__init__.py" = [
+    '__version__ = "{version}"'
+]

@@ -24,7 +24,6 @@ def generate_synthetic_data(
     nr_of_instances: int = 12,
     seed: int = None,
 ) -> pd.DataFrame:
-    nr_of_instances = 12
     if seed is not None:
         np.random.seed(seed)
     dfs = []
@@ -64,6 +63,51 @@ def generate_synthetic_data(
     full_df = pd.concat(dfs)
     if moving_average_values is not None:
         full_df = full_df.rolling(moving_average_values, min_periods=1).mean()
+    return full_df
+
+def generate_lorenz_attractor_data(dt: float = 0.005, num_steps: int = 3000, nr_of_instances: int = 1):
+    def lorenz(x, y, z, s=10, r=28, b=2.667):
+        x_dot = s * (y - x)
+        y_dot = r * x - y - x * z
+        z_dot = x * y - b * z
+        return x_dot, y_dot, z_dot
+
+    def disfun(x, y, z):
+        x0 = 2
+        y0 = 10
+        z0 = 23
+        return (1 - (x / x0) + (y / y0)) * z0 - z
+
+    xs = np.empty(num_steps)
+    ys = np.empty(num_steps)
+    zs = np.empty(num_steps)
+
+    # Set initial values
+    xs[0], ys[0], zs[0] = (0.0, 1.0, 1.05)
+    dfs = []
+    for instance in range(nr_of_instances):
+        # Step through "time", calculating the partial derivatives at the current point
+        # and using them to estimate the next point
+        for i in range(num_steps - 1):
+            x_dot, y_dot, z_dot = lorenz(xs[i], ys[i], zs[i], s=(10 + instance * 0.5))
+            xs[i + 1] = xs[i] + (x_dot * dt)
+            ys[i + 1] = ys[i] + (y_dot * dt)
+            zs[i + 1] = zs[i] + (z_dot * dt)
+        data = np.array([xs, ys, zs]).T
+        feature_names = ["xs", "ys", "zs"]
+        x_label, y_label, z_label = feature_names
+        time_index = np.arange(start=0, stop=num_steps * dt, step=dt)
+        idx = pd.TimedeltaIndex(time_index, unit="S", name="time")
+        df = pd.DataFrame(data, columns=feature_names, index=idx)
+        label_array = np.zeros(df.shape[0])
+        res = disfun(df[x_label], df[y_label], df[z_label])
+        label_array = np.where(res < 1, 0, 1)
+        df["label"] = label_array
+        df["instance"] = instance
+        df = df.set_index("label", append=True)
+        df = df.set_index("instance", append=True)
+        dfs.append(df)
+    full_df = pd.concat(dfs)
     return full_df
 
 

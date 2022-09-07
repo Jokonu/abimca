@@ -8,14 +8,13 @@ License: See the LICENSE file.
 from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from matplotlib import cm
+import matplotlib
 import numpy as np
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import utils
 from mt3scm import MT3SCM
-from lorenz import get_lorenz_attractor_dataframe
 
 LOGGER_NAME = "abimca"
 LOG_LEVEL = "DEBUG"
@@ -37,7 +36,7 @@ def set_plot_params():
             "font.family": "serif",
             "font.sans-serif": ["Computer Modern Roman"],
             "axes.grid": False,
-            "image.cmap": cm.get_cmap("viridis")
+            "image.cmap": matplotlib.cm.get_cmap("viridis")
         }
     )
 
@@ -51,6 +50,7 @@ def plot_buffered_training_results(
     filename: str = "trainbuffer",
     buffered_results_path: Path = Path("tmp") / "buff_results.pkl",
     buffered_reconstruction_path: Path = Path("tmp") / "buff_reconstruction.pkl",
+    animation_plot: bool = False
 ):
     set_plot_params()
     new_sequence_loss_threshold = eta
@@ -58,6 +58,8 @@ def plot_buffered_training_results(
     alldata_df = pd.read_pickle(buffered_results_path)
     result_df = orig_df.copy()
     reconstruction_df = pd.read_pickle(buffered_reconstruction_path)
+    if animation_plot is True:
+        plot_animation(orig_df, alldata_df, dataset_name=filename)
     result_df.loc[:] = reconstruction_df.values
     if ("anomaly" in result_df.index.names) and (
         "changepoint" in result_df.index.names
@@ -133,6 +135,27 @@ def plot_buffered_training_results(
         bbox_inches="tight",
     )
     plt.close()
+
+
+def plot_animation(df, results, artifacts_path: Path = Path("artifacts"), draw_step_size: int = 10, dataset_name: str = "dataset"):
+    results_df = results[results.model == 0].reset_index()
+    subs_ids = results_df["subs_id"]
+    all_figs = []
+    cmap = matplotlib.cm.get_cmap('viridis', len(np.unique(subs_ids)))
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d")
+    for i in range(draw_step_size, df.shape[0], draw_step_size):
+        n_labels = len(np.unique(subs_ids))
+        scatters = create_3d_figure_on_axes(ax, df[:i], df.columns.to_list()[:3], predicted_class_array=subs_ids[:i], cmap=cmap, n_unique_labels=n_labels)
+        all_figs.append(scatters)
+        print(f"Drawing step {i} of {df.shape[0]}, {n_labels=}")
+    fig.suptitle("ABIMCA")
+    fig.colorbar(scatters[0])
+    ani = animation.ArtistAnimation(fig, all_figs, repeat_delay=1000, blit=True)
+    # ani.save('abimca.mp4', fps=30, dpi=300)
+    ani.save("abimca.gif", dpi=100)
+    print(f"saved to gif")
+
 
 def plot_cluster_prediction(
     data_test: pd.DataFrame,
@@ -321,7 +344,7 @@ def set_size(width_pt, fraction=1, subplots=(1, 1), invert_axis: bool = False):
         return (fig_width_in, fig_height_in)
 
 def ax_scatter_3d_original(X, Y, Z, ax, kappa: np.ndarray, tau: np.ndarray, xyz_labels: list[str], subplot_title: str = "Subplot Title", marker_size: float = 0.8, marker_size_array=None, marker="o", plot_changepoints: bool = True, alpha=0.3):
-    cmap = cm.get_cmap("viridis")
+    cmap = matplotlib.cm.get_cmap("viridis")
     marker="."
     data = kappa
     data = (data - data.min()) / (np.std(data))
@@ -337,6 +360,26 @@ def ax_scatter_3d_original(X, Y, Z, ax, kappa: np.ndarray, tau: np.ndarray, xyz_
     clb.set_ticks([color.min(),color.max() / 2, color.max()])
     clb.set_ticklabels(['Low', 'Medium', 'High'], rotation = 45)
     clb.ax.tick_params(labelsize=8)
+
+
+def create_3d_figure_on_axes(ax, df: pd.DataFrame, xyz_labels: list[str], predicted_class_array: np.array = None, plot_changepoints: bool = True, cmap = None, n_unique_labels: int = 2):
+    if predicted_class_array is not None:
+        labels = predicted_class_array
+        df_plot = df[: len(labels)].copy()
+        norm = matplotlib.colors.Normalize(vmin=0, vmax=n_unique_labels, clip=False)
+        scatter1 = ax.scatter(df_plot[xyz_labels[0]], df_plot[xyz_labels[1]], df_plot[xyz_labels[2]], s=0.5, cmap=cmap, c=labels, animated=True, norm=norm)
+        if plot_changepoints is True:
+            labels = np.array(labels)
+            labs = np.where(labels[:-1] != labels[1:], 1, 0)
+            labs = np.concatenate([[0], labs])
+            data_changepoints = df_plot[labs == 1]
+            scatter2 = ax.scatter(data_changepoints[xyz_labels[0]], data_changepoints[xyz_labels[1]], data_changepoints[xyz_labels[2]], s=10, c="dimgrey", marker="o", animated=True)
+    else:
+        scatter1 = ax.scatter(df[xyz_labels[0]], df[xyz_labels[1]], df[xyz_labels[2]], s=0.5, animated=True)
+    ax.set_xlabel(xyz_labels[0])
+    ax.set_ylabel(xyz_labels[1])
+    ax.set_zlabel(xyz_labels[2])
+    return [scatter1, scatter2]
 
 
 def create_3d_figure(df: pd.DataFrame, xyz_labels: list[str] = ["x", "y", "z"], predicted_class_array: np.ndarray = None, plot_changepoints: bool = True):
@@ -359,11 +402,13 @@ def create_3d_figure(df: pd.DataFrame, xyz_labels: list[str] = ["x", "y", "z"], 
 
 
 def plot_lorenz_attractor_3d():
-    df = get_lorenz_attractor_dataframe()
+    df = utils.generate_lorenz_attractor_data()
     set_plot_params()
     fig = create_3d_figure(df)
     plot_name = str("lorenz-attractor-3d." + GRAPHICS_FORMAT)
     fig.savefig(PLOTPATH / plot_name, pad_inches=0, bbox_inches="tight", transparent=TRANSPARENT, dpi=RESOLUTION_DPI, format=GRAPHICS_FORMAT)
+    plot_name = str("lorenz-attractor-3d." + "png")
+    fig.savefig(PLOTPATH / plot_name, pad_inches=0, bbox_inches="tight", transparent=TRANSPARENT, dpi=RESOLUTION_DPI, format="png")
     plt.close(fig)
     logger.debug(f"Plotted file {plot_name} to {PLOTPATH} successfully.")
 

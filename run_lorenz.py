@@ -19,7 +19,7 @@ from abimca.subsequence_identifier import SubsequenceIdentifier
 
 LOGGER_NAME = "abimca"
 LOG_LEVEL = "DEBUG"
-SUFFIX = "_synth"
+SUFFIX = "_lorenz"
 
 TEMP_FOLDER = Path().cwd() / "abimca" / str(".abimca_tmp" + SUFFIX)
 Path(TEMP_FOLDER).mkdir(parents=True, exist_ok=True)
@@ -33,13 +33,14 @@ UNSUPERVISED_METRICS = {
 
 
 def prepare_training_data():
-    df = utils.generate_synthetic_data(nr_of_samples=1000, moving_average_values=20, seed = 42)
+    df = utils.generate_lorenz_attractor_data(dt = 0.005, num_steps = 3000, nr_of_instances = 2)
     logger.debug(f"Scaling data..")
     data = df.copy()
     data.iloc[:, :] = StandardScaler().fit_transform(df.values)
     logger.debug(f"Scaling data DONE ..")
-    data_test = data.xs(1, level="instance")
     data_train = data.xs(0, level="instance")
+    data_test = data.xs(1, level="instance")
+    data_test = data_train
     return data_train, data_test
 
 def fit():
@@ -49,13 +50,25 @@ def fit():
     logger.debug(f"{data_train=}")
     logger.info(f"Instantiating SubsequenceIdentifier class..")
     si = SubsequenceIdentifier(
-        disable_progress_bar=False, save_training_results=True, tempfolder_suffix=SUFFIX
+        seq_len = 10,
+        eta = 0.2,
+        phi = 10,
+        theta = 0.5,
+        omega = 10,
+        psi = 5,
+        dim_bottleneck = 2,
+        learning_rate = 1e-2,
+        step_size = 1,
+        disable_progress_bar=False,
+        save_training_results=True,
+        tempfolder_suffix=SUFFIX,
+        set_parameters_automatically=False
     )
     logger.debug(f"{vars(si)=}")
     logger.info("")
     si.fit(X_train)
     logger.info("Saving temporary algorithm results for plotting..")
-    dump(si, TEMP_FOLDER / "SubsequenceIdentifier_Synth.pkl")
+    dump(si, TEMP_FOLDER / "SubsequenceIdentifier_Lorenz.pkl")
     # params = si.get_params()
     logger.info("Done fitting.")
 
@@ -73,7 +86,7 @@ def predict(
         X_train = data_train.values
         X_test = data_test.values
 
-    si = load(TEMP_FOLDER / "SubsequenceIdentifier_Synth.pkl")
+    si = load(TEMP_FOLDER / "SubsequenceIdentifier_Lorenz.pkl")
     params = si.get_params()
     si.allow_unknown = False
     logger.debug(f"{params=}")
@@ -89,30 +102,31 @@ def predict(
 
     # metrics_dict, kappa_vec, tau_vec = calc_mt3scm(X_test, labels_pred)
     # logger.debug(f"{metrics_dict}")
-    plotting.plot_cluster_prediction(
-        data_test=data_test,
-        labels=labels_pred,
-        x_label="first",
-        y_label="second",
-        z_label="third",
-        filename="offline_clustering_3d.jpg",
-    )
     plotting.plot_buffered_training_results(
         data_train,
         params["eta"],
         params["theta"],
         labels=y_train,
-        signal_names=["first", "second", "third"],
+        signal_names=["xs", "ys", "zs"],
         # plot_signal_names=["x", "y", "z"],
-        filename="online_clustering",
+        filename="online_clustering_lorenz",
         buffered_results_path=Path(TEMP_FOLDER / "buff_results.pkl"),
         buffered_reconstruction_path=Path(TEMP_FOLDER / "buff_reconstruction.pkl"),
+        animation_plot=True,
+    )
+    plotting.plot_cluster_prediction(
+        data_test=data_test,
+        labels=labels_pred,
+        x_label="xs",
+        y_label="ys",
+        z_label="zs",
+        filename="offline_clustering_3d__lorenz.jpg",
     )
     plotting.plot_prediction(
         X=X_test,
         labels=labels_pred,
         ground_truth=labels_true,
-        filename="offline_clustering",
+        filename="offline_clustering_lorenz",
     )
 
 
