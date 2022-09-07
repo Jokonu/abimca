@@ -68,6 +68,6 @@ push = true
 "CITATION.cff" = [
     "^version: {version}",
 ]
-"mt3scm/__init__.py" = [
+"abimca/__init__.py" = [
     '__version__ = "{version}"'
 ]
