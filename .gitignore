@@ -3,3 +3,4 @@
 .trash
 __pycache__
 .abimca_tmp*
+dist

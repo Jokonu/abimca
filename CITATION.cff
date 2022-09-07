@@ -1,8 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "Autoencoder Based Iterative Modeling and Subsequence Clustering Algorithm (ABIMCA)"
-abstract: "This repository provides a new algorithm for online subsequence clustering of multivariate time-series data (MTSD) called 'Autoencoder Based Iterative Modeling and Subsequence
-Clustering Algorithm (ABIMCA)'"
+abstract: "This repository provides a new algorithm for online subsequence clustering of multivariate time-series data (MTSD) called 'Autoencoder Based Iterative Modeling and Subsequence Clustering Algorithm (ABIMCA)'"
 authors:
 - family-names: "Köhne"
   given-names: "Jonas"
