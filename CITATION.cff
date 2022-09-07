@@ -7,7 +7,7 @@ authors:
 - family-names: "Köhne"
   given-names: "Jonas"
   orcid: "https://orcid.org/0000-0001-5536-9604"
-version: 0.1.0
+version: 0.2.0
 identifiers:
   - description: This is the archived snapshot of version 0.1.0 of abimca
     type: doi
