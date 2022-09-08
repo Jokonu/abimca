@@ -144,7 +144,7 @@ class SubsequenceIdentifier(ClusterMixin, BaseEstimator):
         self.adapt_learning_rate = False
         self.load_pretrained_base_model_from_file = False
         self.pretrain_base_model = True
-        self.device = torch.device("cuda:0")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.list_models = []
         self.lowest_subs_id_losses = []
         self._saved_training_results = False
@@ -894,6 +894,12 @@ class LearningRateFinder:
         torch.backends.cudnn.deterministic = True
         torch.use_deterministic_algorithms(True)
 
+    def _get_init_fn(self):
+        if self.device != "cpu":
+            return None
+        else:
+            return self._init_fn
+
     def _set_seed(self):
         if self.seed is not None:
             self.torch_gen = torch.Generator()
@@ -921,7 +927,7 @@ class LearningRateFinder:
             pin_memory=self.pin_memory,
             collate_fn=None,
             num_workers=self.num_workers,
-            worker_init_fn=self._init_fn,
+            worker_init_fn=self._get_init_fn(),
             generator=self.torch_gen,
         )
         with tqdm(

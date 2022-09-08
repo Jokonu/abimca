@@ -7,7 +7,38 @@ This repository contains the python code for the Autoencoder Based Iterative Mod
 ![Autoencoder Based Iterative Modeling and Subsequence Clustering Algorithm (ABIMCA)](abimca.gif)
 
 # Usage
-The above graphic example was generated with the *run_lorenz.py* script. Minimal example is as follows:
+
+Package can be installed with pip
+
+```bash
+$ pip install abimca
+```
+
+or clone the repository, and cd into the directory. Then recommendation is to create a virtual environment after installing and using python 3.9 with [pyenv](https://github.com/pyenv/pyenv)
+
+```python
+python -m venv .venv
+```
+activate the environment
+Linux:
+    $ source .venv/bin/activate
+
+Windows cmd:
+    C:\> .venv\Scripts\activate.bat
+
+Then install with [poetry](https://python-poetry.org/)
+
+```bash
+$ poetry install
+```
+
+Finally run the minimal example in *main.py*
+
+```bash
+$ python -m main
+```
+
+The above graphic example was generated with the *run_lorenz.py* script. The minimal example is as follows:
 
 ```python
 import numpy as np

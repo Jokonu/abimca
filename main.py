@@ -5,7 +5,7 @@ import numpy as np
 def main():
     # Generating random data. This will produce no class predictions or all points have the same class. For more reasonable results replace the data input with your mechatronic measurement data.
     # Number of datapoints (time-steps)
-    n_p = 1000
+    n_p = 300
     # Number of dimensions or features
     dim = 5
     X = np.random.rand(n_p, dim)
