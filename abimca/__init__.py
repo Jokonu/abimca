@@ -1,4 +1,4 @@
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 
 # Local Scripts
 from .subsequence_identifier import SubsequenceIdentifier

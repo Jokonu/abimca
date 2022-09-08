@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "abimca"
-version = "0.2.4"
+version = "0.2.5"
 description = "Autoencoder based iterative modeling and multivariate time-series subsequence clustering algorithm (ABIMCA)"
 authors = ["Jonas Köhne <jokohonas@gmail.com>"]
 maintainers = ["Jonas Köhne <jokohonas@gmail.com>"]
@@ -50,7 +50,7 @@ import_heading_thirdparty="Third Party Libraries"
 import_heading_localfolder="Local Scripts"
 
 [tool.bumpver]
-current_version = "0.2.4"
+current_version = "0.2.5"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
