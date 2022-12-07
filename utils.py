@@ -16,6 +16,53 @@ RESOLUTION_DPI = 300
 LOGPATH = Path.cwd() / "logs"
 Path(LOGPATH).mkdir(parents=True, exist_ok=True)
 
+def generate_random_continuous_synthetic_data(
+    nr_of_samples: int = 400,
+    column_names: list[str, str, str] = ["first", "second", "third"],
+    moving_average_values=None,
+    nr_of_instances: int = 2,
+    seed: int = None,
+    noise_factor: float = 0.02,
+    n_classes: int = 10,
+) -> pd.DataFrame:
+    if seed is not None:
+        np.random.seed(seed)
+    dfs = []
+    n_features = len(column_names)
+    class_values = []
+    class_label = []
+    for cls in range(n_classes):
+        # Initialize empty data matrix per class
+        X = np.zeros((nr_of_samples, n_features), "float64")
+        y = np.zeros((nr_of_samples, 1), "int")
+        # Create random values between 0 and 1 for number of features
+        x_hat = np.random.random(n_features)
+        # Expand with gaussian noise to number of samples
+        for feature in range(n_features):
+            # Expand initial random value and put array in final instance matrix
+            X[:, feature] = np.full(shape=nr_of_samples, fill_value=x_hat[feature])
+            # Add noise with factor 'noise_factor'
+            X[:, feature] = X[:, feature] + (np.random.random(size=nr_of_samples) * noise_factor)
+            # Set label array
+            y[:] = cls
+        class_values.append(X)
+        class_label.append(y)
+    data = np.concatenate(class_values)
+    label = np.concatenate(class_label)
+    for instance in range(nr_of_instances):
+        # Add random noise per instance
+        data = data + (np.random.random(size=data.shape) * noise_factor)
+        df = pd.DataFrame(data=data, columns=column_names)
+        df["instance"] = instance
+        df["class"] = label
+        df.index.rename("time", inplace=True)
+        df = df.set_index("instance", append=True)
+        df = df.set_index("class", append=True)
+        dfs.append(df)
+    full_df = pd.concat(dfs)
+    if moving_average_values is not None:
+        full_df = full_df.rolling(moving_average_values, min_periods=1).mean()
+    return full_df
 
 def generate_synthetic_data(
     nr_of_samples: int = 400,

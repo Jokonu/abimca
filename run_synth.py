@@ -2,6 +2,7 @@
 import os
 from collections import defaultdict
 from pathlib import Path
+import time
 
 # Third Party Libraries
 import utils
@@ -32,8 +33,9 @@ UNSUPERVISED_METRICS = {
 }
 
 
-def prepare_training_data():
-    df = utils.generate_synthetic_data(nr_of_samples=1000, moving_average_values=20, seed = 42)
+def prepare_training_data(nr_of_samples: int = 1000, nr_of_instances: int = 12):
+    # df = utils.generate_synthetic_data(nr_of_samples=nr_of_samples, nr_of_instances=nr_of_instances, moving_average_values=20, seed = 42)
+    df = utils.generate_random_continuous_synthetic_data(nr_of_samples=nr_of_samples, nr_of_instances=24, moving_average_values=20, seed = 42)
     logger.debug(f"Scaling data..")
     data = df.copy()
     data.iloc[:, :] = StandardScaler().fit_transform(df.values)
@@ -42,7 +44,7 @@ def prepare_training_data():
     data_train = data.xs(0, level="instance")
     return data_train, data_test
 
-def fit():
+def fit(nr_of_samples: int = 1000, nr_of_instances: int = 12):
     logger.info("Running ABIMCA algorithm on the synthetic dataset.")
     data_train, _ = prepare_training_data()
     X_train = data_train.values
@@ -60,14 +62,8 @@ def fit():
     logger.info("Done fitting.")
 
 
-def predict(
-    X_train=None,
-    X_test=None,
-    data_train=None,
-    data_test=None,
-    y_train=None,
-    y_test=None,
-):
+def predict(nr_of_samples: int = 1000, nr_of_instances: int = 12):
+    y_train = None
     if X_train is None:
         data_train, data_test = prepare_training_data()
         X_train = data_train.values
@@ -115,6 +111,26 @@ def predict(
         filename="offline_clustering",
     )
 
+def estimate_complexity():
+    nr_of_samples = 50
+    nr_of_instances = 1
+    moving_average_values = 10
+    noise_factor = 0.05
+    n_classes = [1, 2, 3, 5, 10, 15]
+    # iterate over different number of classes and measure the time it takes to fit the data.
+    # Check the actual number of subsequences found with the number of classes set for generating the data.
+    for n_cls in n_classes:
+        start = time.time()
+
+        df = utils.generate_random_continuous_synthetic_data(nr_of_samples=nr_of_samples, nr_of_instances=nr_of_instances, moving_average_values=moving_average_values, seed = 42, n_classes=n_cls, noise_factor=noise_factor)
+        print(f"Shape fo data: {df.shape}")
+        plt.plot(df.values)
+        plt.savefig(f"data_{n_cls}.png")
+        plt.close()
+        ende = time.time()
+        t_trainloop = ende - start
+        logger.debug(f"time spend for {n_cls=}: {t_trainloop:.2f}")
+        t_trainloop = ende - start
 
 if __name__ == "__main__":
     # Standard Libraries
@@ -122,5 +138,6 @@ if __name__ == "__main__":
 
     utils.setupLogger(name=LOGGER_NAME, loglevel=LOG_LEVEL)
     logger = logging.getLogger(LOGGER_NAME)
-    fit()
-    predict()
+    estimate_complexity()
+    # fit()
+    # predict()
