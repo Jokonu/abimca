@@ -27,6 +27,7 @@ scipy = "^1.9.0"
 scikit-learn = "^1.1.2"
 tqdm = "^4.64.0"
 coloredlogs = "^15.0.1"
+seaborn = "^0.12.1"
 
 
 [tool.poetry.dev-dependencies]
@@ -40,6 +41,10 @@ mt3scm = "^0.4.7"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 140
+target-version = ['py310']
 
 [tool.isort]
 profile = "black"
