@@ -24,7 +24,7 @@ DEVELOP = True
 PLOTPATH = Path.cwd() / "plots" / datetime.today().strftime("%Y%m%d")
 Path(PLOTPATH).mkdir(parents=True, exist_ok=True)
 
-GRAPHICS_FORMAT = "pdf"  # or png, pdf, svg, pgf
+GRAPHICS_FORMAT = "png"  # or png, pdf, svg, pgf
 TRANSPARENT = False
 RESOLUTION_DPI = 300
 

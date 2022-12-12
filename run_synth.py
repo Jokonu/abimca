@@ -114,10 +114,13 @@ def predict(nr_of_samples: int = 1000, nr_of_instances: int = 12):
 
 def estimate_complexity():
     nr_of_samples = [10, 20, 30, 50, 100]
+    # nr_of_samples = [5]
     nr_of_instances = [1, 2, 3, 4]
+    # nr_of_instances = [1, 2]
     moving_average_values = 3
     noise_factor = 0.01
     n_classes = [1, 2, 3, 5, 10, 20]
+    # n_classes = [1, 2]
     # n_classes = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200]
     # n_classes = [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 200, 500]
     column_names: list[str, str, str] = ["first", "second", "third"]
@@ -145,9 +148,9 @@ def estimate_complexity():
                 n_datapoints.append(df.shape[0])
                 si = SubsequenceIdentifier(
                     seq_len = 5,
-                    eta = 0.01,
+                    eta = 0.005,
                     phi = 10,
-                    theta = 0.02,
+                    theta = 0.0125,
                     omega = 10,
                     psi = 5,
                     dim_bottleneck = 2,
@@ -185,24 +188,25 @@ def estimate_complexity():
                 times.append(t_trainloop)
                 logger.debug(f"time spend for {n_cls=}_{n_inst=}_{n_samples=}: {t_trainloop:.2f}")
                 # data = {"time": t_trainloop, "n_cls": n_cls, "n_inst": n_inst, "n_samples": n_samples}
-                data = {"time": t_trainloop, "n_cls_found": n_uniq}
+                data = {"time": t_trainloop, "n_cls_found": n_uniq, "n_datapoints": df.shape[0]}
                 index = {"n_cls": n_cls, "n_inst": n_inst, "n_samples": n_samples}
                 multiindex = pd.MultiIndex.from_tuples([tuple(index.values())], names=index.keys())
                 dfs.append(pd.DataFrame(data=data, index=multiindex))
-    times = np.asarray(times)
-    n_classes = np.asarray(n_classes)
-    n_classes_found = np.asarray(n_classes_found)
-    n_datapoints = np.asarray(n_datapoints)
-    import pdb;pdb.set_trace()
-    df_full = pd.concat(dfs)
-    df = pd.DataFrame(data=np.array((times, n_classes, n_classes_found, n_datapoints)).T, columns=["time", "n_cls", "n_cls_found", "n_datapoints"])
-    import pdb;pdb.set_trace()
-    logger.info(f"{df}")
-    df.to_pickle("complexity_results_v01.pkl")
+                df_full = pd.concat(dfs)
+                df_full.to_pickle("complexity_results_full_v02.pkl")
+    # times = np.asarray(times)
+    # n_classes = np.asarray(n_classes)
+    # n_classes_found = np.asarray(n_classes_found)
+    # n_datapoints = np.asarray(n_datapoints)
+    # df_full = pd.concat(dfs)
+    # df = pd.DataFrame(data=np.array((times, n_classes, n_classes_found, n_datapoints)).T, columns=["time", "n_cls", "n_cls_found", "n_datapoints"])
+    # logger.info(f"{df}")
+    # df.to_pickle("complexity_results_v01.pkl")
 
 def plot_results(df: pd.DataFrame = None):
     if df is None:
-        df = pd.read_pickle("complexity_results_v01.pkl")
+        df = pd.read_pickle("complexity_results_full_v02.pkl")
+    df = df.reset_index()
     plt.plot(df["n_cls_found"], df["time"])
     plt.xlabel("n_cls_found [-]")
     plt.ylabel("duration [s]")
@@ -260,7 +264,7 @@ def plot_results(df: pd.DataFrame = None):
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     ax.scatter(xs, ys, zs)
-    ax.legend()
+    # ax.legend()
     ax.set_xlabel("nr. of subsequences identified [-]")
     ax.set_ylabel("nr. of total datapoints scanned [-]")
     ax.set_zlabel("duration [s]")

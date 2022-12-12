@@ -4,3 +4,4 @@
 __pycache__
 .abimca_tmp*
 dist
+*.png
